@@ -1,0 +1,31 @@
+version: "3.9"
+services:
+  express:
+    container_name: express
+    depends_on:
+      - mongo
+    build:
+      context: .
+      dockerfile: ./Dockerfile
+    environment:
+      EXPRESS_PORT: ${EXPRESS_PORT}
+    restart: always
+    ports: 
+      - 5000:5000
+    volumes:
+      - .:/app
+    command: bash -c "./wait-for-it.sh mongo:27017 -- node resetDb.js && nodemon server.js"
+  mongo:
+    image: mongo:6.0.3
+    ports:
+      - ${MONGO_PORT:-27017}:27017
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=${MONGO_USERNAME}
+      - MONGO_INITDB_ROOT_PASSWORD=${MONGO_PASSWORD}
+      - MONGO_DATABASE=${MONGO_DATABASE}
+    volumes:
+      - mongo-db:/data/db
+      - mongo-configdb:/data/configdb
+volumes:
+  mongo-db:
+  mongo-configdb:
